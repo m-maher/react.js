@@ -1,0 +1,129 @@
+<DOCTYPE html>
+<html>
+    <head>
+        <title>React</title>
+
+        <link rel="stylesheet" href="css/bootstrap.min.css"/>
+
+        <script src="./js/jquery.min.js"></script>
+        <script src="./js/popper.min.js"></script>
+        <script src="./js/bootstrap.min.js"></script>
+        <script src="./js/react.development.js"></script>
+        <script src="./js/react-dom.development.js"></script>
+        <script src="./js/axios.min.js"></script>
+        <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+
+    </head>
+    <body>
+
+        <div id="content"></div>
+        
+        <script type="text/babel">
+
+            class App extends React.Component {
+
+                componentDidMount() {
+                    this.getUsers()
+                }
+
+                state = {
+                    users: [],
+                    name: '',
+                    username: ''
+                }
+
+                handleChange = (e) => {
+                    this.setState({
+                        [e.target.id]: e.target.value
+                    })
+                }
+
+                handleSubmit = (e) => {
+                    e.preventDefault()
+                    const {name, username} = this.state
+                    const newUser = {
+                        id: Math.random(),
+                        name,
+                        username
+                    }
+                    this.addUser(newUser)
+                }
+
+                getUsers() {
+                    axios.get("https://jsonplaceholder.typicode.com/users")
+                    .then(response => { this.setState({ users: response.data })                  
+                    })
+                    .catch(err => console.log(err))
+                }
+
+                addUser(contact) {
+                    axios.post('https://jsonplaceholder.typicode.com/users', contact)
+                    .then(response => { this.setState({ users: [...this.state.users, response.data] }) })
+                }
+
+                deleteUser(id) {
+                    axios.delete(`https://jsonplaceholder.typicode.com/users/${id}`)
+                    .then(response => { this.setState({ users: this.state.users.filter( user => user.id != id ) }) })
+                }
+
+                render() {
+                    const users = this.state.users
+                    return (                        
+                        <div className="container">
+                            <div className="row">
+                                <div className="col-12 mt-5">
+                                    <form  className="form-group" onSubmit={this.handleSubmit}>
+                                        <div className="row">
+                                            <div className="col-6">
+                                                <label>Name</label>
+                                                <input type='text' id ='name' className="form-control" required onChange={this.handleChange}/>
+                                            </div>
+                                            <div className="col-6">
+                                                <label>Username</label>
+                                                <input type='text' id ='username' className="form-control" required onChange={this.handleChange}/>
+                                            </div>
+                                            <div className="col-12 mt-4">
+                                                <input type="submit" className="btn btn-primary submit-btn w-100" />
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                                <div className="col-12 mt-3">
+                                    <table className="table">
+                                        <thead className="thead-dark">
+                                            <tr>
+                                                <th scope="col">ID</th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">User Name</th>
+                                                <th scope="col">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {users.map(user => {
+                                                return (
+                                                    <tr key={user.id}>
+                                                        <th scope="row">{user.id}</th>
+                                                        <td>{user.name}</td>
+                                                        <td>{user.username}</td>
+                                                        <td><button className="btn btn-danger mr-3" 
+                                                        onClick={() => this.deleteUser(user.id)}>Delete</button></td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+            }
+
+            const containerElement = document.getElementById('content');
+            ReactDOM.render(<App /> , containerElement);
+
+        </script> 
+
+    </body>
+</html>
